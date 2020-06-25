@@ -14,22 +14,20 @@
     border: none;
 }
 
-
 .text-shadow{
     color: white;
-    text-shadow: #AD9200 4px 1px;
+    text-shadow: #AD9200 4px 2px;
 }
 
 .text-shadow-inverse{
     color: #AD9200;
-    text-shadow: white 4px 1px;
+    text-shadow: white 4px .5px;
 }
 
 .text-light{
     color: white;
 
 }
-
 
 .game-square{
     border: solid transparent 1px;
@@ -40,6 +38,7 @@
 #square-0, #square-3{
     border-right: solid white 4px;
     border-bottom: solid white 4px;
+    padding-left: 3%;
 }
 
 #square-1, #square-4{
@@ -51,7 +50,13 @@
     border-bottom: solid white 4px;
 }
 
-#square-6, #square-7{
+#square-6{
+    border-right: solid white 4px;
+    padding-left: 3%;
+
+}
+
+#square-7{
     border-right: solid white 4px;
 }
 

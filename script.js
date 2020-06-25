@@ -37,7 +37,7 @@ $(document).ready(function () {
             return winning
         }
 
-        winningMoves() {
+        winningMoves(avail) {
             let remMoves = [];
             wins.forEach(list => {
                 let match = 0
@@ -47,14 +47,21 @@ $(document).ready(function () {
                         match++
                     }
                     else {
-                        moves = list[i]
+                        if (avail.includes(list[i])) {
+                            moves = list[i]
+                        }
+                        else {
+                            match = 0
+                        }
                     }
                 }
-
                 if (match == 2) {
-                    remMoves.push(moves)
+                    if (moves) {
+                        remMoves.push(moves)
+                    }
                 }
             })
+
             return remMoves
 
         }
@@ -168,38 +175,34 @@ $(document).ready(function () {
         board.returnBoard().map((element) => {
             $("#game").append(element)
         })
+        
         setTimeout(() => computerPlay(), 1000)
     }
 
     function computerMove(possibilities) {
+
         let choices = []
 
-        if (comp.winningMoves().length > 0) {
-            let cChoices = comp.winningMoves()
-            for (let i = 0; i < cChoices.length; i++) {
-                if (possibilities.includes(cChoices[i])) {
-                    choices.push(cChoices[i])
-                }
-            }
+
+        if (comp.winningMoves(possibilities).length > 0) {
+            choices = comp.winningMoves(possibilities)
         }
-        else if (human.winningMoves().length > 0) {
-            let hChoices = human.winningMoves()
-            for (let i = 0; i < hChoices.length; i++) {
-                if (possibilities.includes(hChoices[i])) {
-                    choices.push(hChoices[i])
-                }
-            }
+
+        else if (human.winningMoves(possibilities).length > 0) {
+            choices = human.winningMoves(possibilities)
         }
 
         else {
             choices.push(...possibilities)
-        }
 
+        }
 
         return choices
     }
-    function computerPlay() {
+
+    async function computerPlay() {
         if (turn[currentTurn] === "computer" && game) {
+
             let possibilities = []
 
             for (let i = 0; i < 9; i++) {
@@ -208,14 +211,15 @@ $(document).ready(function () {
                 }
             }
 
-            let choices = computerMove(possibilities)
+
+            let choices = await computerMove(possibilities)
 
             if (choices.length === 0) {
                 let selection = possibilities[Math.floor(Math.random() * possibilities.length)]
                 board.updateBoard({ id: selection, value: comp.avatar })
                 comp.updateMoves(selection)
             }
-            else{
+            else {
                 let selection = choices[Math.floor(Math.random() * choices.length)]
                 board.updateBoard({ id: selection, value: comp.avatar })
                 comp.updateMoves(selection)
