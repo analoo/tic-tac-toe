@@ -175,21 +175,24 @@ $(document).ready(function () {
         board.returnBoard().map((element) => {
             $("#game").append(element)
         })
-        
+
         setTimeout(() => computerPlay(), 1000)
     }
 
-    function computerMove(possibilities) {
+    async function computerMove(possibilities) {
 
         let choices = []
 
 
         if (comp.winningMoves(possibilities).length > 0) {
-            choices = comp.winningMoves(possibilities)
+            console.log("computer called")
+            choices = await comp.winningMoves(possibilities)
         }
 
         else if (human.winningMoves(possibilities).length > 0) {
-            choices = human.winningMoves(possibilities)
+            console.log("human called")
+            choices = await human.winningMoves(possibilities)
+            console.log(choices)
         }
 
         else {
