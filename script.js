@@ -37,21 +37,21 @@ $(document).ready(function () {
             return winning
         }
 
-        winningMoves(){
+        winningMoves() {
             let remMoves = [];
             wins.forEach(list => {
                 let match = 0
                 let moves
-                for(let i = 0; i<3; i++){
-                    if(this.moves.includes(list[i])){
+                for (let i = 0; i < 3; i++) {
+                    if (this.moves.includes(list[i])) {
                         match++
                     }
-                    else{
+                    else {
                         moves = list[i]
                     }
                 }
 
-                if(match == 2){
+                if (match == 2) {
                     remMoves.push(moves)
                 }
             })
@@ -66,7 +66,7 @@ $(document).ready(function () {
             this.board = board
         }
 
-        getboard(){
+        getboard() {
             return this.board
         }
 
@@ -131,17 +131,17 @@ $(document).ready(function () {
             let id = event.target.id
             let value = $(`#${id}`).data("id")
             if (board.checkPlace(value) === "") {
-                board.updateBoard({id: value, value: human.avatar})
+                board.updateBoard({ id: value, value: human.avatar })
                 human.updateMoves(value)
                 if (human.checkWin()) {
                     $("#message").text(`${human.name} wins`)
                 }
                 else {
                     currentTurn++
-                    if(currentTurn < 9){
+                    if (currentTurn < 9) {
                         $("#message").text(`${turn[currentTurn]}'s turn`)
                     }
-                    else{
+                    else {
                         $("#message").text(`Game Over`)
                         game = false
                     }
@@ -162,6 +162,7 @@ $(document).ready(function () {
         alert("Try again!")
     })
 
+
     function displayBoard() {
         $("#game").empty()
         board.returnBoard().map((element) => {
@@ -170,61 +171,66 @@ $(document).ready(function () {
         setTimeout(() => computerPlay(), 1000)
     }
 
-    function computerMove(){
-        let possibilities = []
+    function computerMove(possibilities) {
         let choices = []
-      
-        for (let i = 0; i < 9; i++){
-            if(board.checkPlace(i) === ""){
-                possibilities.push(i)
-            }
-        }
 
-        if(comp.winningMoves().length > 0){
+        if (comp.winningMoves().length > 0) {
             let cChoices = comp.winningMoves()
-            for(let i=0; i<cChoices.length ; i++){
-                if(possibilities.includes(cChoices[i])){
+            for (let i = 0; i < cChoices.length; i++) {
+                if (possibilities.includes(cChoices[i])) {
                     choices.push(cChoices[i])
                 }
             }
-            if (choices.length==0){
-                choices.push(...possibilities)
-            }
         }
-        else if(human.winningMoves().length > 0){
+        else if (human.winningMoves().length > 0) {
             let hChoices = human.winningMoves()
-            for(let i=0; i<hChoices.length; i++){
-                if(possibilities.includes(hChoices[i])){
+            for (let i = 0; i < hChoices.length; i++) {
+                if (possibilities.includes(hChoices[i])) {
                     choices.push(hChoices[i])
                 }
             }
-            if (choices.length==0){
-                choices.push(...possibilities)
-            }
         }
 
-        else{
+        else {
             choices.push(...possibilities)
         }
+
+
         return choices
     }
     function computerPlay() {
         if (turn[currentTurn] === "computer" && game) {
-            let choices = computerMove()
-            console.log(choices)
-            let selection = choices[Math.floor(Math.random() * choices.length)]
-            board.updateBoard({id: selection, value: comp.avatar})
-            comp.updateMoves(selection)
+            let possibilities = []
+
+            for (let i = 0; i < 9; i++) {
+                if (board.checkPlace(i) === "") {
+                    possibilities.push(i)
+                }
+            }
+
+            let choices = computerMove(possibilities)
+
+            if (choices.length === 0) {
+                let selection = possibilities[Math.floor(Math.random() * possibilities.length)]
+                board.updateBoard({ id: selection, value: comp.avatar })
+                comp.updateMoves(selection)
+            }
+            else{
+                let selection = choices[Math.floor(Math.random() * choices.length)]
+                board.updateBoard({ id: selection, value: comp.avatar })
+                comp.updateMoves(selection)
+            }
+
 
             if (comp.checkWin()) {
                 $("#message").text(`${comp.name} wins`)
             }
             else {
                 currentTurn++
-                if(currentTurn < 9){
+                if (currentTurn < 9) {
                     $("#message").text(`${turn[currentTurn]}'s turn`)
                 }
-                else{
+                else {
                     $("#message").text(`Game Over`)
                     game = false
                 }

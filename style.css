@@ -112,3 +112,10 @@
     float: left;
     width: 50%;
 }
+
+
+button{
+    color: white;
+    background-color: red;
+    border-style: none;
+}
