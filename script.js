@@ -22,7 +22,6 @@ $(document).ready(function () {
         updateMoves(x) {
             this.moves.push(x)
         }
-
         name() {
             return this.name
         }
@@ -30,21 +29,68 @@ $(document).ready(function () {
         checkWin() {
             let winning = false
             wins.forEach(list => {
-                if(this.moves.includes(list[0]) && this.moves.includes(list[1]) && this.moves.includes(list[2])){
+                if (this.moves.includes(list[0]) && this.moves.includes(list[1]) && this.moves.includes(list[2])) {
                     winning = true
                     game = false
                 }
             })
             return winning
-            
         }
+
+        winningMoves(){
+            let remMoves = [];
+            wins.forEach(list => {
+                let match = 0
+                let moves
+                for(let i = 0; i<3; i++){
+                    if(this.moves.includes(list[i])){
+                        match++
+                    }
+                    else{
+                        moves = list[i]
+                    }
+                }
+
+                if(match == 2){
+                    remMoves.push(moves)
+                }
+            })
+            return remMoves
+
+        }
+    }
+    // creates board
+
+    class Board {
+        constructor(board = { 0: "", 1: "", 2: "", 3: "", 4: "", 5: "", 6: "", 7: "", 8: "" }) {
+            this.board = board
+        }
+
+        getboard(){
+            return this.board
+        }
+
+        updateBoard(num) {
+            this.board[num.id] = `${num.value}`
+        }
+
+        checkPlace(num) {
+            return this.board[num]
+        }
+
+        returnBoard() {
+            let elements = []
+            Object.keys(this.board).forEach(key => {
+                elements.push(`<div class="game-square height-1-4 text-center" id="square-${key}" data-id=${key}>${this.board[key]} </div>`)
+            })
+            return elements
+        }
+
     }
 
 
-
-
     function startGame() {
-        board = ["", "", "", "", "", "", "", "", ""]
+        board = new Board;
         currentTurn = 0;
         game = true;
 
@@ -84,15 +130,21 @@ $(document).ready(function () {
         if (turn[currentTurn] === "human" && game) {
             let id = event.target.id
             let value = $(`#${id}`).data("id")
-            if (board[value] === "") {
-                board[value] = human.avatar
+            if (board.checkPlace(value) === "") {
+                board.updateBoard({id: value, value: human.avatar})
                 human.updateMoves(value)
-                if(human.checkWin()){
+                if (human.checkWin()) {
                     $("#message").text(`${human.name} wins`)
                 }
-                else{
+                else {
                     currentTurn++
-                    $("#message").text(`${turn[currentTurn]}'s turn`)
+                    if(currentTurn < 9){
+                        $("#message").text(`${turn[currentTurn]}'s turn`)
+                    }
+                    else{
+                        $("#message").text(`Game Over`)
+                        game = false
+                    }
                 }
                 displayBoard()
 
@@ -112,37 +164,70 @@ $(document).ready(function () {
 
     function displayBoard() {
         $("#game").empty()
-        board.map((element, i) => {
-            $("#game").append(`<div class="game-square height-1-4 text-center" id="square-${i}" data-id=${i}>
-            ${element} </div>`)
+        board.returnBoard().map((element) => {
+            $("#game").append(element)
         })
         setTimeout(() => computerPlay(), 1000)
-
-
     }
 
+    function computerMove(){
+        let possibilities = []
+        let choices = []
+      
+        for (let i = 0; i < 9; i++){
+            if(board.checkPlace(i) === ""){
+                possibilities.push(i)
+            }
+        }
+
+        if(comp.winningMoves().length > 0){
+            let cChoices = comp.winningMoves()
+            for(let i=0; i<cChoices.length ; i++){
+                if(possibilities.includes(cChoices[i])){
+                    choices.push(cChoices[i])
+                }
+            }
+            if (choices.length==0){
+                choices.push(...possibilities)
+            }
+        }
+        else if(human.winningMoves().length > 0){
+            let hChoices = human.winningMoves()
+            for(let i=0; i<hChoices.length; i++){
+                if(possibilities.includes(hChoices[i])){
+                    choices.push(hChoices[i])
+                }
+            }
+            if (choices.length==0){
+                choices.push(...possibilities)
+            }
+        }
+
+        else{
+            choices.push(...possibilities)
+        }
+        return choices
+    }
     function computerPlay() {
         if (turn[currentTurn] === "computer" && game) {
-
-
-            let choices = []
-            board.map((element, i) => {
-                if (element === "") {
-                    choices.push(i)
-                }
-            })
-
+            let choices = computerMove()
+            console.log(choices)
             let selection = choices[Math.floor(Math.random() * choices.length)]
-            board[selection] = comp.avatar
-
+            board.updateBoard({id: selection, value: comp.avatar})
             comp.updateMoves(selection)
 
-            if(comp.checkWin()){
+            if (comp.checkWin()) {
                 $("#message").text(`${comp.name} wins`)
             }
-            else{
+            else {
                 currentTurn++
-                $("#message").text(`${turn[currentTurn]}'s turn`)
+                if(currentTurn < 9){
+                    $("#message").text(`${turn[currentTurn]}'s turn`)
+                }
+                else{
+                    $("#message").text(`Game Over`)
+                    game = false
+                }
             }
 
             displayBoard()
