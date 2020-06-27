@@ -125,7 +125,7 @@ $(document).ready(function () {
                 if (human.checkWin()) {
                     $("#message").text(`${human.name} wins`)
                     game = false
-                    $("#display").css("display", "inline")
+                    $("#start").css("display", "inline")
 
                 }
                 else {
