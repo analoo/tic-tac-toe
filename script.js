@@ -1,6 +1,6 @@
 $(document).ready(function () {
 
-    let icons = [`<i class="icon-sel fas fa-dot-circle fa-4x text-shadow-inverse text-center top-padding"></i>`, `<i class="icon-sel fas fa-times fa-5x text-shadow-inverse text-center top-padding"></i>`]
+    let icons = [`<i class="icon-sel fas fa-dot-circle fa-4x text-shadow-inverse text-center top-padding"></i>`, `<i class="icon-sel fas fa-times fa-5x text-shadow-inverse text-center top-padding"></i>`];
     let human;
     let comp;
     let board;
@@ -37,32 +37,22 @@ $(document).ready(function () {
             return winning
         }
 
-        winningMoves(avail) {
-            let remMoves = [];
-            wins.forEach(list => {
-                let match = 0
-                let moves
-                for (let i = 0; i < 3; i++) {
-                    if (this.moves.includes(list[i])) {
-                        match++
-                    }
-                    else {
-                        if (avail.includes(list[i])) {
-                            moves = list[i]
-                        }
-                        else {
-                            match = 0
-                        }
-                    }
-                }
-                if (match == 2) {
-                    if (moves) {
-                        remMoves.push(moves)
-                    }
+
+        winningMoves(unclaimedSquares) {
+            let winningMoves = [];
+            wins.forEach(winCombo => {
+                // Moves made and available as part of this win pattern
+                let madeMoves = winCombo.filter(i => this.moves.includes(i));
+                let availableMoves = winCombo.filter(i => unclaimedSquares.includes(i));
+
+                if (madeMoves.length == 2) {
+                    winningMoves = winningMoves.concat(availableMoves);
                 }
             })
 
-            return remMoves
+            console.log(`${this.name} winning moves are: ${winningMoves}`)
+
+            return winningMoves
 
         }
     }
@@ -92,14 +82,6 @@ $(document).ready(function () {
             })
             return elements
         }
-
-    }
-
-
-    function startGame() {
-        board = new Board;
-        currentTurn = 0;
-        game = true;
 
     }
 
@@ -142,15 +124,21 @@ $(document).ready(function () {
                 human.updateMoves(value)
                 if (human.checkWin()) {
                     $("#message").text(`${human.name} wins`)
+                    game = false
+                    $("#display").css("display", "inline")
+
                 }
                 else {
                     currentTurn++
                     if (currentTurn < 9) {
                         $("#message").text(`${turn[currentTurn]}'s turn`)
+
                     }
                     else {
                         $("#message").text(`Game Over`)
                         game = false
+                        $("#start").css("display", "inline")
+
                     }
                 }
                 displayBoard()
@@ -161,6 +149,12 @@ $(document).ready(function () {
             }
 
         }
+
+    })
+
+    $("#start").on("click", (event) => {
+        event.preventDefault();
+        window.location.reload()
 
     })
 
@@ -176,23 +170,23 @@ $(document).ready(function () {
             $("#game").append(element)
         })
 
-        setTimeout(() => computerPlay(), 1000)
+        if (turn[currentTurn] === "computer" && game) {
+            computerPlay()
+        }
     }
 
-    async function computerMove(possibilities) {
+   function computerMove(possibilities) {
 
         let choices = []
 
 
         if (comp.winningMoves(possibilities).length > 0) {
             console.log("computer called")
-            choices = await comp.winningMoves(possibilities)
+            choices = comp.winningMoves(possibilities)
         }
 
         else if (human.winningMoves(possibilities).length > 0) {
-            console.log("human called")
-            choices = await human.winningMoves(possibilities)
-            console.log(choices)
+            choices =  human.winningMoves(possibilities)
         }
 
         else {
@@ -204,51 +198,59 @@ $(document).ready(function () {
     }
 
     async function computerPlay() {
-        if (turn[currentTurn] === "computer" && game) {
 
-            let possibilities = []
+        let possibilities = []
 
-            for (let i = 0; i < 9; i++) {
-                if (board.checkPlace(i) === "") {
-                    possibilities.push(i)
-                }
+        for (let i = 0; i < 9; i++) {
+            if (board.checkPlace(i) === "") {
+                possibilities.push(i)
             }
+        }
+
+        let choices = await computerMove(possibilities)
+
+        if (choices.length === 0) {
+            let selection = possibilities[Math.floor(Math.random() * possibilities.length)]
+            board.updateBoard({ id: selection, value: comp.avatar })
+            comp.updateMoves(selection)
+        }
+        else {
+            let selection = choices[Math.floor(Math.random() * choices.length)]
+            board.updateBoard({ id: selection, value: comp.avatar })
+            comp.updateMoves(selection)
+        }
 
 
-            let choices = await computerMove(possibilities)
+        if (comp.checkWin()) {
+            $("#message").text(`${comp.name} wins`)
+            game = false
+            $("#start").css("display", "inline")
 
-            if (choices.length === 0) {
-                let selection = possibilities[Math.floor(Math.random() * possibilities.length)]
-                board.updateBoard({ id: selection, value: comp.avatar })
-                comp.updateMoves(selection)
-            }
-            else {
-                let selection = choices[Math.floor(Math.random() * choices.length)]
-                board.updateBoard({ id: selection, value: comp.avatar })
-                comp.updateMoves(selection)
-            }
-
-
-            if (comp.checkWin()) {
-                $("#message").text(`${comp.name} wins`)
-            }
-            else {
-                currentTurn++
-                if (currentTurn < 9) {
-                    $("#message").text(`${turn[currentTurn]}'s turn`)
-                }
-                else {
-                    $("#message").text(`Game Over`)
-                    game = false
-                }
-            }
-
-            displayBoard()
 
         }
+        else {
+            currentTurn++
+            if (currentTurn < 9) {
+                $("#message").text(`${turn[currentTurn]}'s turn`)
+            }
+            else {
+                $("#message").text(`Game Over`)
+                game = false
+                $("#start").css("display", "inline")
+
+            }
+        }
+
+        displayBoard()
+
     }
 
 
+    function startGame() {
+        board = new Board;
+        currentTurn = 0;
+        game = true;
+    }
 
     startGame()
 
